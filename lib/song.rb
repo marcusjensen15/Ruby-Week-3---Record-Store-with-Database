@@ -1,11 +1,12 @@
 class Song
   attr_reader :id
-  attr_accessor :name, :album_id
+  attr_accessor :name, :album_id, :year
 
   def initialize(attributes)
     @name = attributes.fetch(:name)
     @album_id = attributes.fetch(:album_id)
     @id = attributes.fetch(:id)
+    @year = attributes.fetch(:year)
   end
 
   def ==(song_to_compare)
@@ -23,7 +24,8 @@ end
       name = song.fetch("name")
       album_id = song.fetch("album_id").to_i
       id = song.fetch("id").to_i
-      songs.push(Song.new({:name => name, :album_id => album_id, :id => id}))
+      year = song.fetch("year").to_i
+      songs.push(Song.new({:name => name, :album_id => album_id, :id => id, :year => year }))
     end
     songs
   end
@@ -35,14 +37,29 @@ end
       name = song.fetch("name")
       album_id = song.fetch("album_id").to_i
       id = song.fetch("id").to_i
-      songs.push(Song.new({:name => name, :album_id => album_id, :id => id}))
+      year = song.fetch("year").to_i
+      songs.push(Song.new({:name => name, :album_id => album_id, :id => id, :year => year }))
     end
     songs.sort_by { |songs| songs.name }
   end
 
 
+  def self.sorted_year
+    returned_songs = DB.exec("SELECT * FROM songs;")
+    songs = []
+    returned_songs.each() do |song|
+      name = song.fetch("name")
+      album_id = song.fetch("album_id").to_i
+      id = song.fetch("id").to_i
+      year = song.fetch("year").to_i
+      songs.push(Song.new({:name => name, :album_id => album_id, :id => id, :year => year}))
+    end
+    songs.sort_by { |songs| songs.year }
+  end
+
+
   def save
-    result = DB.exec("INSERT INTO songs (name, album_id) VALUES ('#{@name}', #{@album_id}) RETURNING id;")
+    result = DB.exec("INSERT INTO songs (name, album_id, year) VALUES ('#{@name}', #{@album_id}, #{@year}) RETURNING id;")
     @id = result.first().fetch("id").to_i
   end
 
@@ -51,7 +68,8 @@ end
     name = song.fetch("name")
     album_id = song.fetch("album_id").to_i
     id = song.fetch("id").to_i
-    Song.new({:name => name, :album_id => album_id, :id => id})
+    year = song.fetch("year").to_i
+    Song.new({:name => name, :album_id => album_id, :id => id, :year => year })
   end
 
   def update(name, album_id)
