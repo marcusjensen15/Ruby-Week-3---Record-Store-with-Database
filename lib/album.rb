@@ -1,25 +1,27 @@
 require './lib/song'
 
 class Album
-  attr_reader :id, :name, :year, :artist, :genre
+  attr_accessor :name, :id
 
-  @@albums = {}
-  @@total_rows = 0
-  @@sold_albums = {}
+  # @@albums = {}
+  # @@total_rows = 0
+  # @@sold_albums = {}
 
-  def initialize(name, id, year, genre, artist)
-    @name = name
-    @id = id || @@total_rows += 1
-    @year = year
-    @genre = genre
-    @artist = artist
-    @sold = false
+  def initialize(attributes)
+    @name = attributes.fetch(:name)
+    @id = attributes.fetch(:id) # Note that this line has been changed.
   end
 
   def self.all
-    @@albums.values().sort_by { | val| val.name}
+    returned_albums = DB.exec("SELECT * FROM albums;")
+    albums = []
+    returned_albums.each() do |album|
+      name = album.fetch("name")
+      id = album.fetch("id").to_i
+      albums.push(Album.new({:name => name, :id => id}))
+    end
+    albums
   end
-
 
   def self.sold_albums
     @@sold_albums.values()
@@ -30,8 +32,9 @@ class Album
   end
 
   def save
-    @@albums[self.id] = Album.new(self.name, self.id, self.year, self.genre, self.artist)
-  end
+      result = DB.exec("INSERT INTO albums (name) VALUES ('#{@name}') RETURNING id;")
+      @id = result.first().fetch("id").to_i
+    end
 
   def ==(album_to_compare)
     self.name == album_to_compare.name()
@@ -39,15 +42,18 @@ class Album
 
   def update(name)
     @name = name
+    DB.exec("UPDATE albums SET name = '#{@name}' WHERE id = #{@id};")
   end
 
   def self.clear
-    @@albums = {}
-    @@total_rows = 0
+    DB.exec("DELETE FROM albums *;")
   end
 
   def self.find(id)
-    @@albums[id]
+    album = DB.exec("SELECT * FROM albums WHERE id = #{id};").first
+    name = album.fetch("name")
+    id = album.fetch("id").to_i
+    Album.new({:name => name, :id => id})
   end
 
   def self.search(type, search)
@@ -57,7 +63,7 @@ class Album
   end
 
   def delete
-    @@albums.delete(self.id)
+    DB.exec("DELETE FROM albums WHERE id = #{@id};")
   end
 
   def get_songs
