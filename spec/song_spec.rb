@@ -31,6 +31,20 @@ describe '#Song' do
     end
   end
 #
+describe('.sorted_songs') do
+  it("returns a list of all songs") do
+    song = Song.new({:name => "Giant Steps", :album_id => @album.id, id: nil })
+    song.save()
+    song2 = Song.new({:name => "Toast", :album_id => @album.id, id: nil })
+    song2.save()
+    song3 = Song.new({:name => "Apple", :album_id => @album.id, id: nil })
+    song3.save()
+    song4 = Song.new({:name => "Boots", :album_id => @album.id, id: nil })
+    song4.save()
+    expect(Song.sorted_songs).to(eq([song3, song4, song, song2 ]))
+  end
+end
+
   describe('.clear') do
     it("clears all songs") do
       song = Song.new({:name => "Giant Steps", :album_id => @album.id, id: nil })
