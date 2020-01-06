@@ -84,6 +84,16 @@ describe '#Album' do
       end
     end
 
+    describe('.find') do
+        it("finds an album by id") do
+          album = Album.new({:name =>"Pig", id: nil })
+          album.save()
+          album2 = Album.new({:name =>"Green", id: nil })
+          album2.save()
+          expect(Album.find(album.id)).to(eq(album))
+        end
+      end
+
   describe('#==') do
     it("is the same album if it has the same attributes as another album") do
       album = Album.new({:name =>"Blue", id: nil })
